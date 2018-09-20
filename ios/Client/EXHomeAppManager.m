@@ -47,6 +47,7 @@ NSString *kEXHomeManifestResourceName = @"kernel-manifest";
                      NSString *url = result[@"url"];
                      completion(url);
                    } onFailure:^(NSString *errorMessage) {
+                     NSLog(@"malpa fail");
                      completion(nil);
                    }];
 }

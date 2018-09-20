@@ -112,10 +112,13 @@ NSString * const EXAppDidRegisterUserNotificationSettingsNotification = @"kEXApp
       }
     }
   }
-
+  
   // This is safe to call; if the app doesn't have permission to display user-facing notifications
   // then registering for a push token is a no-op
-  [[EXKernel sharedInstance].serviceRegistry.remoteNotificationManager registerForRemoteNotifications];
+  
+  
+  [[EXLocalNotificationManager sharedInstance] autorizeAndInit:launchOptions];
+  //[[EXKernel sharedInstance].serviceRegistry.remoteNotificationManager registerForRemoteNotifications];
   [[EXKernel sharedInstance].serviceRegistry.branchManager application:application didFinishLaunchingWithOptions:launchOptions];
   _launchOptions = launchOptions;
 }
@@ -152,17 +155,6 @@ NSString * const EXAppDidRegisterUserNotificationSettingsNotification = @"kEXApp
 {
   BOOL isFromBackground = !(application.applicationState == UIApplicationStateActive);
   [[EXKernel sharedInstance].serviceRegistry.remoteNotificationManager handleRemoteNotification:notification fromBackground:isFromBackground];
-}
-
-- (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification
-{
-  BOOL isFromBackground = !(application.applicationState == UIApplicationStateActive);
-  [[EXLocalNotificationManager sharedInstance] handleLocalNotification:notification fromBackground:isFromBackground];
-}
-
-- (void)application:(UIApplication *)application didRegisterUserNotificationSettings:(nonnull UIUserNotificationSettings *)notificationSettings
-{
-  [[NSNotificationCenter defaultCenter] postNotificationName:EXAppDidRegisterUserNotificationSettingsNotification object:nil];
 }
 
 #pragma mark - deep linking hooks

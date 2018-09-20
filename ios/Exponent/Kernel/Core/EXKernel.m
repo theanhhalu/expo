@@ -169,21 +169,31 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
           fromBackground:(BOOL)isFromBackground
                 isRemote:(BOOL)isRemote
 {
+  NSLog(@"malpa sending notifiaction via EXkernel");
+  NSMutableString * expLog = [@"malpa expId" mutableCopy];
+  [expLog appendString:destinationExperienceId];
+  NSLog(expLog);
   EXKernelAppRecord *destinationApp = [_appRegistry newestRecordWithExperienceId:destinationExperienceId];
   NSDictionary *bodyWithOrigin = [self _notificationPropsWithBody:notifBody isFromBackground:isFromBackground isRemote:isRemote];
   if (destinationApp) {
+    NSLog(@"malpa already-open exp");
     // send the body to the already-open experience
     [self _dispatchJSEvent:@"Exponent.notification" body:bodyWithOrigin toApp:destinationApp];
     [self _moveAppToVisible:destinationApp];
   } else {
+    NSLog(@"malpa no  exp is cur runnung");
     // no app is currently running for this experience id.
     // if we're Expo Client, we can query Home for a past experience in the user's history, and route the notification there.
     if (_browserController) {
+      NSLog(@"malpa browserController is present");
       __weak typeof(self) weakSelf = self;
       [_browserController getHistoryUrlForExperienceId:destinationExperienceId completion:^(NSString *urlString) {
-        if (urlString) {
+        NSLog(@"malpa callback");
+        if (urlString) { // find another way to obtain URL
+          NSLog(@"malpa got URL");
           NSURL *url = [NSURL URLWithString:urlString];
           if (url) {
+            NSLog(@"malpa will create app");
             [weakSelf createNewAppWithUrl:url initialProps:@{ @"notification": bodyWithOrigin }];
           }
         }
@@ -221,10 +231,11 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
   if (remoteNotification) {
     initialProps[@"notification"] = [self _notificationPropsWithBody:remoteNotification[@"body"] isFromBackground:YES isRemote:YES];
   }
-  UILocalNotification *localNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
+  //need change
+ /* UILocalNotification *localNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
   if (localNotification) {
     initialProps[@"notification"] = [self _notificationPropsWithBody:localNotification.userInfo[@"body"] isFromBackground:YES isRemote:NO];
-  }
+  }*/
   return initialProps;
 }
 

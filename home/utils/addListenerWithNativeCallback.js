@@ -3,7 +3,9 @@ import { DeviceEventEmitter, NativeModules } from 'react-native';
 const { ExponentKernel } = NativeModules;
 
 const addListenerWithNativeCallback = (eventName, eventListener) => {
+  console.log("trying to add eventLiseter for name " + eventName);
   if (ExponentKernel) {
+    console.log("kernel is present");
     DeviceEventEmitter.addListener(eventName, async (event) => {
       try {
         let result = await eventListener(event);

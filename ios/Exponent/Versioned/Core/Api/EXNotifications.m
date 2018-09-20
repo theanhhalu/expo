@@ -9,6 +9,7 @@
 #import <React/RCTConvert.h>
 
 #import <EXConstantsInterface/EXConstantsInterface.h>
+#import <UserNotifications/UserNotifications.h>
 
 @implementation RCTConvert (NSCalendarUnit)
 
@@ -92,13 +93,22 @@ RCT_EXPORT_METHOD(presentLocalNotification:(NSDictionary *)payload
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(__unused RCTPromiseRejectBlock)reject)
 {
-  UILocalNotification *notification = [self _localNotificationFromPayload:payload];
 
+  UNMutableNotificationContent* content = [self _localNotificationFromPayload:payload];
   [EXUtil performSynchronouslyOnMainThread:^{
-    [RCTSharedApplication() presentLocalNotificationNow:notification];
+    UNTimeIntervalNotificationTrigger* trigger = [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:1 repeats:NO];
+    UNNotificationRequest* request = [UNNotificationRequest
+                                      requestWithIdentifier:content.userInfo[@"id"] content:content trigger:trigger];
+    [[UNUserNotificationCenter currentNotificationCenter] addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
+      if (error != nil) {
+        NSLog(@"%@", error.localizedDescription);
+        reject(@"Could not make notification request", error.localizedDescription, error);
+      } else {
+        resolve(content.userInfo[@"id"]);
+      }
+    }];
   }];
 
-  resolve(notification.userInfo[@"id"]);
 }
 
 RCT_EXPORT_METHOD(scheduleLocalNotification:(NSDictionary *)payload
@@ -106,27 +116,36 @@ RCT_EXPORT_METHOD(scheduleLocalNotification:(NSDictionary *)payload
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(__unused RCTPromiseRejectBlock)reject)
 {
-  UILocalNotification *notification = [self _localNotificationFromPayload:payload];
-
-  notification.fireDate = [RCTConvert NSDate:options[@"time"]] ?: [NSDate new];
-  notification.repeatInterval = [RCTConvert NSCalendarUnit:options[@"repeat"]] ?: 0;
-
+  bool repeats = NO;
+  if (options[@"repeats"]) {
+    repeats = ([options[@"repeats"] isEqualToString:@"Yes"])? YES : NO;
+  }
+  UNMutableNotificationContent* content = [self _localNotificationFromPayload:payload];
+  
+  NSDateComponents * date = [[NSDateComponents alloc] init];
+  NSArray * unites = @[@"day", @"month", @"year", @"weekday", @"quarter", @"leapMonth", @"nanosecond", @"era", @"weekdayOrdinal", @"weekOfMonth", @"weekOfYear", @"hour", @"second", @"minute", @"yearForWeekOfYear"];
+  for( NSString * unit in unites) {
+    if (options[unit]) [date setValue:(NSNumber *)options[unit] forKey:unit];
+  }
   [EXUtil performSynchronouslyOnMainThread:^{
-    [RCTSharedApplication() scheduleLocalNotification:notification];
+    UNCalendarNotificationTrigger* trigger = [UNCalendarNotificationTrigger triggerWithDateMatchingComponents:date repeats:repeats];
+    UNNotificationRequest* request = [UNNotificationRequest
+                                      requestWithIdentifier:content.userInfo[@"id"] content:content trigger:trigger];
+    [[UNUserNotificationCenter currentNotificationCenter] addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
+      if (error != nil) {
+        NSLog(@"%@", error.localizedDescription);
+        reject(@"Could not make notification request", error.localizedDescription, error);
+      } else {
+        resolve(content.userInfo[@"id"]);
+      }
+    }];
   }];
-
-  resolve(notification.userInfo[@"id"]);
 }
 
 RCT_EXPORT_METHOD(cancelScheduledNotification:(NSString *)uniqueId)
 {
   [EXUtil performSynchronouslyOnMainThread:^{
-    for (UILocalNotification *notification in [RCTSharedApplication() scheduledLocalNotifications]) {
-      if ([notification.userInfo[@"id"] isEqualToString:uniqueId]) {
-        [RCTSharedApplication() cancelLocalNotification:notification];
-        break;
-      }
-    }
+   [UNNotificationRequest cancelPreviousPerformRequestsWithTarget:uniqueId];
   }];
 }
 
@@ -141,13 +160,14 @@ RCT_REMAP_METHOD(cancelAllScheduledNotificationsAsync,
                  cancelAllScheduledNotificationsAsyncWithResolver:(RCTPromiseResolveBlock)resolve
                  rejecter:(__unused RCTPromiseRejectBlock)reject)
 {
-  [EXUtil performSynchronouslyOnMainThread:^{
-    for (UILocalNotification *notification in [RCTSharedApplication() scheduledLocalNotifications]) {
-      if ([notification.userInfo[@"experienceId"] isEqualToString:self.experienceId]) {
-        [RCTSharedApplication() cancelLocalNotification:notification];
+  [[UNUserNotificationCenter currentNotificationCenter] getPendingNotificationRequestsWithCompletionHandler:
+    ^(NSArray<UNNotificationRequest *> * _Nonnull __strong requests){
+      for (UNNotificationRequest * request in requests) {
+        if ([request.content.userInfo[@"experienceId"] isEqualToString:self.experienceId]) {
+          [UNNotificationRequest cancelPreviousPerformRequestsWithTarget:request.content.userInfo[@"id"]];
+        }
       }
-    }
-  }];
+    }];
   resolve(nil);
 }
 
@@ -178,29 +198,30 @@ RCT_EXPORT_METHOD(setBadgeNumberAsync:(nonnull NSNumber *)number
 
 #pragma mark - internal
 
-- (UILocalNotification *)_localNotificationFromPayload:(NSDictionary *)payload
+- (UNMutableNotificationContent *)_localNotificationFromPayload:(NSDictionary *)payload
 {
-  RCTAssert((payload[@"data"] != nil), @"Attempted to send a local notification with no `data` property.");
-  UILocalNotification *localNotification = [UILocalNotification new];
-
+  
+  UNMutableNotificationContent* content = [[UNMutableNotificationContent alloc] init];
   NSString *uniqueId = [[NSUUID new] UUIDString];
 
-  localNotification.alertTitle = payload[@"title"];
-  localNotification.alertBody = payload[@"body"];
+  content.title = payload[@"title"];
+  content.body = payload[@"body"];
   
   if ([payload[@"sound"] boolValue]) {
-    localNotification.soundName = UILocalNotificationDefaultSoundName;
+    content.sound = [UNNotificationSound defaultSound];
   }
   
-  localNotification.applicationIconBadgeNumber = [RCTConvert NSInteger:payload[@"count"]] ?: 0;
+  if (payload[@"count"]) {
+     content.badge = (NSNumber *)payload[@"count"];
+  }
+ 
+  content.userInfo = @{
+   @"body": payload[@"data"],
+   @"experienceId": self.experienceId,
+   @"id": uniqueId,
+  };
 
-  localNotification.userInfo = @{
-                                 @"body": payload[@"data"],
-                                 @"experienceId": self.experienceId,
-                                 @"id": uniqueId,
-                                 };
-
-  return localNotification;
+  return content;
 }
 
 @end
