@@ -15,6 +15,7 @@
 #import <React/RCTEventDispatcher.h>
 #import <React/RCTModuleData.h>
 #import <React/RCTUtils.h>
+#import "EXSendNotificationParams.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,11 +27,7 @@ NSString * const kEXKernelClearJSCacheUserDefaultsKey = @"EXKernelClearJSCacheUs
 const NSUInteger kEXErrorCodeAppForbidden = 424242;
 
 @interface EXKernel () <EXKernelAppRegistryDelegate>
-@property (atomic, strong) NSString *expId;
-@property (atomic, strong) NSDictionary * dic;
-@property (atomic, strong) NSNumber * isRemote;
-@property (atomic, strong) NSNumber * isFromBackground;
-
+@property (atomic, strong) EXSendNotificationParams * sendNotificationParams;
 @end
 
 // Protocol that should be implemented by all versions of EXAppState class.
@@ -145,9 +142,12 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
 
 - (void)runIfNotificationIsPresent
 {
-  if (_expId == nil) return;
-  [self sendNotification:_dic toExperienceWithId:_expId fromBackground:_isFromBackground isRemote:_isRemote];
-  _expId = nil;
+  if (_sendNotificationParams == nil) return;
+  [self sendNotification:_sendNotificationParams.dic
+      toExperienceWithId:_sendNotificationParams.expId
+          fromBackground:_sendNotificationParams.isFromBackground
+                isRemote:_sendNotificationParams.isRemote];
+  _sendNotificationParams = nil;
 }
 
 - (id)nativeModuleForAppManager:(EXReactAppManager *)appManager named:(NSString *)moduleName
@@ -212,13 +212,10 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
             [weakSelf createNewAppWithUrl:url initialProps:@{ @"notification": bodyWithOrigin }];
           }
         } else {
-        //  urlString = @"exp://192.168.83.158:19000";
-         // weakSelf.url = urlString;
-          weakSelf.expId = destinationExperienceId;
-          weakSelf.dic = notifBody;
-          weakSelf.isFromBackground = [NSNumber numberWithBool:isFromBackground];
-          weakSelf.isRemote = [NSNumber numberWithBool:isRemote];
-         // [[EXNotificationProvider sharedInstance] addNotification: notifBody expId: destinationExperienceId isFromBackground: isFromBackground isRemote: isRemote];
+          weakSelf.sendNotificationParams = [[EXSendNotificationParams alloc] initWithExpId:(NSString *)destinationExperienceId
+                                                                           notificationBody:(NSDictionary *)notifBody
+                                                                                   isRemote:[NSNumber numberWithBool:isFromBackground]
+                                                                           isFromBackground:[NSNumber numberWithBool:isRemote]];
         }
       }];
     }
