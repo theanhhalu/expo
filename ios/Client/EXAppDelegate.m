@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
   _window.rootViewController = _rootViewController;
 
   [_window makeKeyAndVisible];
-
+  
   return YES;
 }
 

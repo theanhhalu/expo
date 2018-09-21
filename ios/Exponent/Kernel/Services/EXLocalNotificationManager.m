@@ -27,7 +27,7 @@ static NSString * delimeter = @"7624679807";
 didReceiveNotificationResponse:(UNNotificationResponse *)response
          withCompletionHandler:(void (^)(void))completionHandler
 {
-  NSLog(@"did received notification");
+  NSLog(@"malpa did received notification");
   NSDictionary *payload = response.notification.request.content.userInfo;
   
   if (payload) {

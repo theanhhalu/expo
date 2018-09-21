@@ -214,11 +214,14 @@ RCT_EXPORT_METHOD(setBadgeNumberAsync:(nonnull NSNumber *)number
   if (payload[@"count"]) {
      content.badge = (NSNumber *)payload[@"count"];
   }
+  
+ // NSString * url = []
  
   content.userInfo = @{
    @"body": payload[@"data"],
    @"experienceId": self.experienceId,
-   @"id": uniqueId,
+   @"id": uniqueId//,
+  // @"URL":url
   };
 
   return content;

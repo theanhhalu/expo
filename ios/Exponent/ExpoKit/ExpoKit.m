@@ -115,8 +115,6 @@ NSString * const EXAppDidRegisterUserNotificationSettingsNotification = @"kEXApp
   
   // This is safe to call; if the app doesn't have permission to display user-facing notifications
   // then registering for a push token is a no-op
-  
-  
   [[EXLocalNotificationManager sharedInstance] autorizeAndInit:launchOptions];
   //[[EXKernel sharedInstance].serviceRegistry.remoteNotificationManager registerForRemoteNotifications];
   [[EXKernel sharedInstance].serviceRegistry.branchManager application:application didFinishLaunchingWithOptions:launchOptions];

@@ -7,6 +7,7 @@ const addListenerWithNativeCallback = (eventName, eventListener) => {
   if (ExponentKernel) {
     console.log("kernel is present");
     DeviceEventEmitter.addListener(eventName, async (event) => {
+      console.log('addListener', eventName);
       try {
         let result = await eventListener(event);
         if (!result) {
@@ -14,6 +15,8 @@ const addListenerWithNativeCallback = (eventName, eventListener) => {
         }
         ExponentKernel.onEventSuccess(event.eventId, result);
       } catch (e) {
+        console.log("sdfadfsdfsg");
+        console.log(e);
         ExponentKernel.onEventFailure(event.eventId, e.message);
       }
     });

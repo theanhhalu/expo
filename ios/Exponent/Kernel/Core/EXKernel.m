@@ -26,6 +26,10 @@ NSString * const kEXKernelClearJSCacheUserDefaultsKey = @"EXKernelClearJSCacheUs
 const NSUInteger kEXErrorCodeAppForbidden = 424242;
 
 @interface EXKernel () <EXKernelAppRegistryDelegate>
+@property (atomic, strong) NSString *expId;
+@property (atomic, strong) NSDictionary * dic;
+@property (atomic, strong) NSNumber * isRemote;
+@property (atomic, strong) NSNumber * isFromBackground;
 
 @end
 
@@ -139,11 +143,21 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
   [self _moveAppToVisible:app];
 }
 
+- (void)runIfNotificationIsPresent
+{
+  if (_expId == nil) return;
+  [self sendNotification:_dic toExperienceWithId:_expId fromBackground:_isFromBackground isRemote:_isRemote];
+  _expId = nil;
+}
+
 - (id)nativeModuleForAppManager:(EXReactAppManager *)appManager named:(NSString *)moduleName
 {
   id destinationBridge = appManager.reactBridge;
 
+  NSLog(@"malpa is Bridge present %d for moduleName: %@", (destinationBridge == nil)? 1 : 0, moduleName);
+  
   if ([destinationBridge respondsToSelector:@selector(batchedBridge)]) {
+    NSLog(@"malpa responds");
     id batchedBridge = [destinationBridge batchedBridge];
     id moduleData = [batchedBridge moduleDataForName:moduleName];
     
@@ -153,6 +167,7 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
     }
     
     if (moduleData) {
+      NSLog(@"malpa moduleData");
       return [moduleData instance];
     }
   } else {
@@ -189,13 +204,21 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
       __weak typeof(self) weakSelf = self;
       [_browserController getHistoryUrlForExperienceId:destinationExperienceId completion:^(NSString *urlString) {
         NSLog(@"malpa callback");
-        if (urlString) { // find another way to obtain URL
+        if (urlString) {
           NSLog(@"malpa got URL");
           NSURL *url = [NSURL URLWithString:urlString];
           if (url) {
             NSLog(@"malpa will create app");
             [weakSelf createNewAppWithUrl:url initialProps:@{ @"notification": bodyWithOrigin }];
           }
+        } else {
+        //  urlString = @"exp://192.168.83.158:19000";
+         // weakSelf.url = urlString;
+          weakSelf.expId = destinationExperienceId;
+          weakSelf.dic = notifBody;
+          weakSelf.isFromBackground = [NSNumber numberWithBool:isFromBackground];
+          weakSelf.isRemote = [NSNumber numberWithBool:isRemote];
+         // [[EXNotificationProvider sharedInstance] addNotification: notifBody expId: destinationExperienceId isFromBackground: isFromBackground isRemote: isRemote];
         }
       }];
     }
@@ -225,14 +248,16 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
 
 - (NSDictionary *)initialAppPropsFromLaunchOptions:(NSDictionary *)launchOptions
 {
+  NSLog(@"malpa initAppWithProps");
   NSMutableDictionary *initialProps = [NSMutableDictionary dictionary];
   
   NSDictionary *remoteNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
   if (remoteNotification) {
     initialProps[@"notification"] = [self _notificationPropsWithBody:remoteNotification[@"body"] isFromBackground:YES isRemote:YES];
   }
+  
   //need change
- /* UILocalNotification *localNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
+  /* UILocalNotification *localNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
   if (localNotification) {
     initialProps[@"notification"] = [self _notificationPropsWithBody:localNotification.userInfo[@"body"] isFromBackground:YES isRemote:NO];
   }*/

@@ -65,6 +65,8 @@ FOUNDATION_EXPORT NSString * const kEXKernelClearJSCacheUserDefaultsKey;
 
 - (void)logAnalyticsEvent:(NSString *)eventId forAppRecord:(EXKernelAppRecord *)appRecord;
 
+- (void)runIfNotificationIsPresent;
+
 @end
 
 NS_ASSUME_NONNULL_END
