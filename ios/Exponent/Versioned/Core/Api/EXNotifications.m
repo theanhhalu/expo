@@ -142,6 +142,34 @@ RCT_EXPORT_METHOD(scheduleLocalNotification:(NSDictionary *)payload
   }];
 }
 
+RCT_EXPORT_METHOD(scheduleLocalNotificationWithTimeInterval:(NSDictionary *)payload
+                  withOptions:(NSDictionary *)options
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(__unused RCTPromiseRejectBlock)reject)
+{
+  bool repeats = NO;
+  if (options[@"repeats"]) {
+    repeats = ([options[@"repeats"] isEqualToString:@"Yes"])? YES : NO;
+  }
+  UNMutableNotificationContent* content = [self _localNotificationFromPayload:payload];
+  
+  [EXUtil performSynchronouslyOnMainThread:^{
+    int timeInterval = [((NSNumber *)options[@"time-interval"]) intValue];
+    UNTimeIntervalNotificationTrigger* trigger = [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:timeInterval
+                                                                                                    repeats:repeats];
+    UNNotificationRequest* request = [UNNotificationRequest
+                                      requestWithIdentifier:content.userInfo[@"id"] content:content trigger:trigger];
+    [[UNUserNotificationCenter currentNotificationCenter] addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
+      if (error != nil) {
+        NSLog(@"%@", error.localizedDescription);
+        reject(@"Could not make notification request", error.localizedDescription, error);
+      } else {
+        resolve(content.userInfo[@"id"]);
+      }
+    }];
+  }];
+}
+
 RCT_EXPORT_METHOD(cancelScheduledNotification:(NSString *)uniqueId)
 {
   [EXUtil performSynchronouslyOnMainThread:^{
@@ -214,14 +242,11 @@ RCT_EXPORT_METHOD(setBadgeNumberAsync:(nonnull NSNumber *)number
   if (payload[@"count"]) {
      content.badge = (NSNumber *)payload[@"count"];
   }
-  
- // NSString * url = []
  
   content.userInfo = @{
    @"body": payload[@"data"],
    @"experienceId": self.experienceId,
-   @"id": uniqueId//,
-  // @"URL":url
+   @"id": uniqueId
   };
 
   return content;

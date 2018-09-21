@@ -245,12 +245,17 @@ export default {
   },
 
   async scheduleLocalNotificationWithMatchAsync(notification, options) {
-    console.log("jestem");
     if (Platform.os === 'android') {
        return new Promise((resolve,reject) => reject("This function currently works only on ios"));
     }
-    console.log("dfgdfgdffgd");
     return ExponentNotifications.scheduleLocalNotification(notification, options);
+  },
+
+  async scheduleLocalNotificationWithTimeIntervalAsync(notification, options) {
+    if (Platform.os === 'android') {
+       return new Promise((resolve,reject) => reject("This function currently works only on ios"));
+    }
+    return ExponentNotifications.scheduleLocalNotificationWithTimeInterval(notification, options);
   },
   /* Schedule a notification at a later date */
   async scheduleLocalNotificationAsync(
