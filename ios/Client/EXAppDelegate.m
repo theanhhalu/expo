@@ -63,6 +63,10 @@ NS_ASSUME_NONNULL_BEGIN
   [[ExpoKit sharedInstance] application:application didFailToRegisterForRemoteNotificationsWithError:err];
 }
 
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler {
+  [[ExpoKit sharedInstance] application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler: completionHandler];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

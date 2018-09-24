@@ -12,7 +12,7 @@
 #import "EXKernelLinkingManager.h"
 #import "EXReactAppExceptionHandler.h"
 #import "EXRemoteNotificationManager.h"
-#import "EXLocalNotificationManager.h"
+#import "EXUserNotificationManager.h"
 #import "EXBranchManager.h"
 
 #import <Crashlytics/Crashlytics.h>
@@ -115,8 +115,8 @@ NSString * const EXAppDidRegisterUserNotificationSettingsNotification = @"kEXApp
   
   // This is safe to call; if the app doesn't have permission to display user-facing notifications
   // then registering for a push token is a no-op
-  [[EXLocalNotificationManager sharedInstance] autorizeAndInit:launchOptions];
-  //[[EXKernel sharedInstance].serviceRegistry.remoteNotificationManager registerForRemoteNotifications];
+  [[EXUserNotificationManager sharedInstance] autorizeAndInit:launchOptions];
+  [[EXKernel sharedInstance].serviceRegistry.remoteNotificationManager registerForRemoteNotifications];
   [[EXKernel sharedInstance].serviceRegistry.branchManager application:application didFinishLaunchingWithOptions:launchOptions];
   _launchOptions = launchOptions;
 }
@@ -153,6 +153,14 @@ NSString * const EXAppDidRegisterUserNotificationSettingsNotification = @"kEXApp
 {
   BOOL isFromBackground = !(application.applicationState == UIApplicationStateActive);
   [[EXKernel sharedInstance].serviceRegistry.remoteNotificationManager handleRemoteNotification:notification fromBackground:isFromBackground];
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
+fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler {
+  BOOL isFromBackground = !(application.applicationState == UIApplicationStateActive);
+  NSLog(@"malpa didReceivedRemoteNotification isFromBackground:%@", (isFromBackground)?@"yes":@"no");
+  //[[EXKernel sharedInstance].serviceRegistry.remoteNotificationManager handleRemoteNotification:userInfo fromBackground:isFromBackground];
+  //completionHandler(UIBackgroundFetchResultNoData); // change
 }
 
 #pragma mark - deep linking hooks

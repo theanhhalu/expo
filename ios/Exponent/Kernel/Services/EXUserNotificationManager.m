@@ -1,23 +1,22 @@
 // Copyright 2015-present 650 Industries. All rights reserved.
 
-#import "EXLocalNotificationManager.h"
+#import "EXUserNotificationManager.h"
 #import "EXKernel.h"
+#import "EXRemoteNotificationManager.h"
 
-@interface EXLocalNotificationManager()
+@interface EXUserNotificationManager()
 @property (atomic) UNUserNotificationCenter *center;
 @property NSDictionary *Categories;
 @end
 
-@implementation EXLocalNotificationManager
-static NSString * delimeter = @"7624679807";
-
+@implementation EXUserNotificationManager
 + (instancetype)sharedInstance
 {
-  static EXLocalNotificationManager *theManager;
+  static EXUserNotificationManager *theManager;
   static dispatch_once_t once;
   dispatch_once(&once, ^{
     if (!theManager) {
-      theManager = [EXLocalNotificationManager new];
+      theManager = [EXUserNotificationManager new];
     }
   });
   return theManager;
@@ -27,17 +26,21 @@ static NSString * delimeter = @"7624679807";
 didReceiveNotificationResponse:(UNNotificationResponse *)response
          withCompletionHandler:(void (^)(void))completionHandler
 {
-  NSLog(@"malpa did received notification");
+  if (![[EXKernel sharedInstance].serviceRegistry.remoteNotificationManager supportsCurrentRuntimeEnvironment]) {
+    DDLogWarn(@"Expo Remote Notification services won't work in an ExpoKit app because Expo cannot manage your APNS certificates.");
+  }
+  BOOL isFromBackground = !([UIApplication sharedApplication].applicationState == UIApplicationStateActive);
+  NSLog(@"malpa did received notification isFromBackground:%@", (isFromBackground)?@"Yes" : @"No");
   NSDictionary *payload = response.notification.request.content.userInfo;
-  
   if (payload) {
-    NSDictionary *body = [payload objectForKey:@"body"];
+    NSDictionary *body = (payload[@"body"])?[payload objectForKey:@"body"]:@{};
     NSString *experienceId = [payload objectForKey:@"experienceId"];
+    BOOL isRemote = (payload[@"metadata-remote"])? YES : NO;
     if (body && experienceId) {
       [[EXKernel sharedInstance] sendNotification:body
                                toExperienceWithId:experienceId
-                                   fromBackground:NO
-                                         isRemote:NO];
+                                   fromBackground:isFromBackground
+                                         isRemote:isRemote];
     }
   }
   completionHandler();
@@ -50,7 +53,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
   NSLog(@"notification will present");
   completionHandler(UNAuthorizationOptionAlert + UNAuthorizationOptionSound);
 }
-
 
 - (void)autorizeAndInit: (NSDictionary *) launchOptions
 {
@@ -65,16 +67,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
       }
     }
   ];
-}
-
--(bool) isPermissionGranted // todo
-{
-  [_center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
-    if (settings.authorizationStatus != UNAuthorizationStatusAuthorized) {
-      // Notifications not allowed
-    }
-  }];
-  return YES;
 }
 
 @end

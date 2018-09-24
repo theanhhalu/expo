@@ -5,7 +5,7 @@
 
 @class UILocalNotification;
 
-@interface EXLocalNotificationManager : NSObject <UNUserNotificationCenterDelegate>
+@interface EXUserNotificationManager : NSObject <UNUserNotificationCenterDelegate>
 
 + (instancetype)sharedInstance;
 - (void)autorizeAndInit: (NSDictionary *) launchOptions;

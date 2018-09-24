@@ -205,7 +205,7 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
       [_browserController getHistoryUrlForExperienceId:destinationExperienceId completion:^(NSString *urlString) {
         NSLog(@"malpa callback");
         if (urlString) {
-          NSLog(@"malpa got URL");
+          NSLog(@"malpa got URL: %@", urlString);
           NSURL *url = [NSURL URLWithString:urlString];
           if (url) {
             NSLog(@"malpa will create app");
@@ -253,11 +253,6 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
     initialProps[@"notification"] = [self _notificationPropsWithBody:remoteNotification[@"body"] isFromBackground:YES isRemote:YES];
   }
   
-  //need change
-  /* UILocalNotification *localNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
-  if (localNotification) {
-    initialProps[@"notification"] = [self _notificationPropsWithBody:localNotification.userInfo[@"body"] isFromBackground:YES isRemote:NO];
-  }*/
   return initialProps;
 }
 
