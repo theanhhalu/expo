@@ -29,9 +29,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
   if (![[EXKernel sharedInstance].serviceRegistry.remoteNotificationManager supportsCurrentRuntimeEnvironment]) {
     DDLogWarn(@"Expo Remote Notification services won't work in an ExpoKit app because Expo cannot manage your APNS certificates.");
   }
-  BOOL isFromBackground = !([UIApplication sharedApplication].applicationState == UIApplicationStateActive);
-  NSLog(@"malpa did received notification isFromBackground:%@", (isFromBackground)?@"Yes" : @"No");
-  NSDictionary *payload = response.notification.request.content.userInfo;
+  BOOL isFromBackground = !([UIApplication sharedApplication].applicationState == UIApplicationStateActive);  NSDictionary *payload = response.notification.request.content.userInfo;
   if (payload) {
     NSDictionary *body = (payload[@"body"])?[payload objectForKey:@"body"]:@{};
     NSString *experienceId = [payload objectForKey:@"experienceId"];
@@ -57,7 +55,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
        willPresentNotification:(UNNotification *)notification
          withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler
 {
-  NSLog(@"notification will present");
   NSDictionary *payload = notification.request.content.userInfo;
   if (payload) {
     NSDictionary *body = (payload[@"body"])?[payload objectForKey:@"body"]:@{};

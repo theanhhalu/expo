@@ -155,11 +155,8 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
 - (id)nativeModuleForAppManager:(EXReactAppManager *)appManager named:(NSString *)moduleName
 {
   id destinationBridge = appManager.reactBridge;
-
-  NSLog(@"malpa is Bridge present %d for moduleName: %@", (destinationBridge == nil)? 1 : 0, moduleName);
   
   if ([destinationBridge respondsToSelector:@selector(batchedBridge)]) {
-    NSLog(@"malpa responds");
     id batchedBridge = [destinationBridge batchedBridge];
     id moduleData = [batchedBridge moduleDataForName:moduleName];
     
@@ -169,7 +166,6 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
     }
     
     if (moduleData) {
-      NSLog(@"malpa moduleData");
       return [moduleData instance];
     }
   } else {
@@ -241,7 +237,6 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
 
 - (NSDictionary *)initialAppPropsFromLaunchOptions:(NSDictionary *)launchOptions
 {
-  NSLog(@"malpa initAppWithProps");
   NSMutableDictionary *initialProps = [NSMutableDictionary dictionary];
   
   NSDictionary *remoteNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];

@@ -158,9 +158,6 @@ NSString * const EXAppDidRegisterUserNotificationSettingsNotification = @"kEXApp
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
 fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler {
   BOOL isFromBackground = !(application.applicationState == UIApplicationStateActive);
-  NSLog(@"malpa didReceivedRemoteNotification isFromBackground:%@", (isFromBackground)?@"yes":@"no");
-  //[[EXKernel sharedInstance].serviceRegistry.remoteNotificationManager handleRemoteNotification:userInfo fromBackground:isFromBackground];
-  //completionHandler(UIBackgroundFetchResultNoData); // change
 }
 
 #pragma mark - deep linking hooks
