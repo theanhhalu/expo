@@ -58,6 +58,22 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
          withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler
 {
   NSLog(@"notification will present");
+  NSDictionary *payload = notification.request.content.userInfo;
+  if (payload) {
+    NSDictionary *body = (payload[@"body"])?[payload objectForKey:@"body"]:@{};
+    NSString *experienceId = [payload objectForKey:@"experienceId"];
+    NSString * userText = @"";
+    
+    BOOL isRemote = (payload[@"metadata-remote"])? YES : NO;
+    if (body && experienceId) {
+      [[EXKernel sharedInstance] sendNotification:body
+                               toExperienceWithId:experienceId
+                                   fromBackground:NO
+                                         isRemote:isRemote
+                                         actionId: @"will_present"
+                                         userText: userText];
+    }
+  }
   completionHandler(UNAuthorizationOptionAlert + UNAuthorizationOptionSound);
 }
 
