@@ -9,12 +9,19 @@
 #import "EXSendNotificationParams.h"
 
 @implementation EXSendNotificationParams
-- (id)initWithExpId:(NSString *)expId notificationBody: (NSDictionary *)dic isRemote: (NSNumber *) isRemote isFromBackground: (NSNumber *)isFromBackground {
+- (id)initWithExpId:(NSString *)expId
+   notificationBody: (NSDictionary *)dic
+           isRemote: (NSNumber *) isRemote
+   isFromBackground: (NSNumber *)isFromBackground
+           actionId: (NSString *)actionId
+           userText: (NSString *)userText {
   if (self = [super init]) {
     _isRemote = isRemote;
     _isFromBackground = isFromBackground;
     _expId = expId;
     _dic = dic;
+    _actionId = actionId;
+    _userText = userText;
     return self;
   }
   return nil;

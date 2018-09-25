@@ -35,12 +35,19 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
   if (payload) {
     NSDictionary *body = (payload[@"body"])?[payload objectForKey:@"body"]:@{};
     NSString *experienceId = [payload objectForKey:@"experienceId"];
+    NSString * userText = @"";
+    if ([response isKindOfClass:[UNTextInputNotificationResponse class]]) {
+      userText = ((UNTextInputNotificationResponse *) response).userText;
+    }
+    
     BOOL isRemote = (payload[@"metadata-remote"])? YES : NO;
     if (body && experienceId) {
       [[EXKernel sharedInstance] sendNotification:body
                                toExperienceWithId:experienceId
                                    fromBackground:isFromBackground
-                                         isRemote:isRemote];
+                                         isRemote:isRemote
+                                         actionId: response.actionIdentifier
+                                         userText: userText];
     }
   }
   completionHandler();

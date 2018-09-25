@@ -151,8 +151,8 @@ NSString * const EXAppDidRegisterUserNotificationSettingsNotification = @"kEXApp
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)notification
 {
-  BOOL isFromBackground = !(application.applicationState == UIApplicationStateActive);
-  [[EXKernel sharedInstance].serviceRegistry.remoteNotificationManager handleRemoteNotification:notification fromBackground:isFromBackground];
+  //BOOL isFromBackground = !(application.applicationState == UIApplicationStateActive);
+  //[[EXKernel sharedInstance].serviceRegistry.remoteNotificationManager handleRemoteNotification:notification fromBackground:isFromBackground];
 }
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo

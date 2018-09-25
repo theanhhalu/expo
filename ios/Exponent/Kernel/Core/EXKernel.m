@@ -144,9 +144,11 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
 {
   if (_sendNotificationParams == nil) return;
   [self sendNotification:_sendNotificationParams.dic
-      toExperienceWithId:_sendNotificationParams.expId
-          fromBackground:_sendNotificationParams.isFromBackground
-                isRemote:_sendNotificationParams.isRemote];
+       toExperienceWithId:_sendNotificationParams.expId
+           fromBackground:_sendNotificationParams.isFromBackground
+                 isRemote:_sendNotificationParams.isRemote
+                 actionId:_sendNotificationParams.actionId
+                 userText:_sendNotificationParams.userText];
   _sendNotificationParams = nil;
 }
 
@@ -183,39 +185,33 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
       toExperienceWithId:(NSString *)destinationExperienceId
           fromBackground:(BOOL)isFromBackground
                 isRemote:(BOOL)isRemote
+                actionId: (NSString *) actionId
+                userText: (NSString *) userText
 {
-  NSLog(@"malpa sending notifiaction via EXkernel");
-  NSMutableString * expLog = [@"malpa expId" mutableCopy];
-  [expLog appendString:destinationExperienceId];
-  NSLog(expLog);
   EXKernelAppRecord *destinationApp = [_appRegistry newestRecordWithExperienceId:destinationExperienceId];
-  NSDictionary *bodyWithOrigin = [self _notificationPropsWithBody:notifBody isFromBackground:isFromBackground isRemote:isRemote];
+  NSDictionary *bodyWithOrigin = [self _notificationPropsWithBody:notifBody isFromBackground:isFromBackground isRemote:isRemote actionId: actionId userText: userText];
   if (destinationApp) {
-    NSLog(@"malpa already-open exp");
     // send the body to the already-open experience
     [self _dispatchJSEvent:@"Exponent.notification" body:bodyWithOrigin toApp:destinationApp];
     [self _moveAppToVisible:destinationApp];
   } else {
-    NSLog(@"malpa no  exp is cur runnung");
     // no app is currently running for this experience id.
     // if we're Expo Client, we can query Home for a past experience in the user's history, and route the notification there.
     if (_browserController) {
-      NSLog(@"malpa browserController is present");
       __weak typeof(self) weakSelf = self;
       [_browserController getHistoryUrlForExperienceId:destinationExperienceId completion:^(NSString *urlString) {
-        NSLog(@"malpa callback");
         if (urlString) {
-          NSLog(@"malpa got URL: %@", urlString);
           NSURL *url = [NSURL URLWithString:urlString];
           if (url) {
-            NSLog(@"malpa will create app");
             [weakSelf createNewAppWithUrl:url initialProps:@{ @"notification": bodyWithOrigin }];
           }
         } else {
           weakSelf.sendNotificationParams = [[EXSendNotificationParams alloc] initWithExpId:(NSString *)destinationExperienceId
                                                                            notificationBody:(NSDictionary *)notifBody
-                                                                                   isRemote:[NSNumber numberWithBool:isFromBackground]
-                                                                           isFromBackground:[NSNumber numberWithBool:isRemote]];
+                                                                                   isRemote:[NSNumber numberWithBool:isRemote]
+                                                                           isFromBackground:[NSNumber numberWithBool:isFromBackground]
+                                                                                   actionId:actionId
+                                                                                   userText:userText];
         }
       }];
     }
@@ -250,13 +246,17 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
   
   NSDictionary *remoteNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
   if (remoteNotification) {
-    initialProps[@"notification"] = [self _notificationPropsWithBody:remoteNotification[@"body"] isFromBackground:YES isRemote:YES];
+    initialProps[@"notification"] = [self _notificationPropsWithBody:remoteNotification[@"body"] isFromBackground:YES isRemote:YES actionId:nil userText:nil];
   }
   
   return initialProps;
 }
 
-- (NSDictionary *)_notificationPropsWithBody:(NSDictionary *)notifBody isFromBackground:(BOOL)isFromBackground isRemote:(BOOL)isRemote
+- (NSDictionary *)_notificationPropsWithBody:(NSDictionary *)notifBody
+                            isFromBackground:(BOOL)isFromBackground
+                                    isRemote:(BOOL)isRemote
+                                    actionId:(NSString *)actionId
+                                    userText:(NSString *)userText
 {
   // if the notification came from the background, in most but not all cases, this means the user acted on an iOS notification
   // and caused the app to launch.
@@ -270,6 +270,8 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
     @"origin": (isFromBackground) ? @"selected" : @"received",
     @"remote": @(isRemote),
     @"data": notifBody,
+    @"actionId": actionId,
+    @"userText": userText
   };
 }
 

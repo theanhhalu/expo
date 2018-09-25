@@ -111,6 +111,35 @@ RCT_EXPORT_METHOD(presentLocalNotification:(NSDictionary *)payload
 
 }
 
+RCT_EXPORT_METHOD(addCategory: (NSString *) categoryId
+                  actions: (NSArray *) actions
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(__unused RCTPromiseRejectBlock)reject)
+{
+  NSMutableArray<UNNotificationAction *> * actionsArray = [[NSMutableArray alloc] init];
+  
+  for( NSArray * action in actions) {
+    int optionsInt = [(NSNumber *)action[2] intValue];
+    UNNotificationActionOptions options = UNNotificationActionOptionForeground + optionsInt;
+                                     
+    if (([action count] == 5)) {
+      UNTextInputNotificationAction * newAction = [UNTextInputNotificationAction actionWithIdentifier:action[0]
+                                                                                                title:action[1]
+                                                                                              options:options
+                                                                                 textInputButtonTitle:action[3] textInputPlaceholder:action[4]];
+      [actionsArray addObject:newAction];
+    } else {
+      UNNotificationAction * newAction = [UNNotificationAction actionWithIdentifier:action[0] title:action[1] options:options];
+      [actionsArray addObject:newAction];
+    }
+  }
+  
+  UNNotificationCategory * newCategory = [UNNotificationCategory categoryWithIdentifier:categoryId actions:actionsArray intentIdentifiers:@[] options:UNNotificationCategoryOptionNone];
+  
+  [[UNUserNotificationCenter currentNotificationCenter] setNotificationCategories:[NSSet setWithObject:newCategory]];
+  resolve(@"done");
+}
+
 RCT_EXPORT_METHOD(scheduleLocalNotification:(NSDictionary *)payload
                   withOptions:(NSDictionary *)options
                   resolver:(RCTPromiseResolveBlock)resolve
@@ -241,6 +270,10 @@ RCT_EXPORT_METHOD(setBadgeNumberAsync:(nonnull NSNumber *)number
   
   if (payload[@"count"]) {
      content.badge = (NSNumber *)payload[@"count"];
+  }
+  
+  if (payload[@"categoryId"]) {
+    content.categoryIdentifier = payload[@"categoryId"];
   }
  
   content.userInfo = @{

@@ -168,9 +168,16 @@ function _legacySaveChannel(id: string, channel: Channel): Promise<void> {
 }
 
 export default {
+  RED : 2,
+  UNLOCK : 1,
   /* Only used internally to initialize the notification from top level props */
   _setInitialNotification(notification: Notification) {
     _initialNotification = notification;
+  },
+
+  // User passes set of actions titles.
+  addCategoryAsync(categoryId, actions): Promise<string> {
+    return ExponentNotifications.addCategory(categoryId, actions);
   },
 
   /* Re-export */
