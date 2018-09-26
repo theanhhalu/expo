@@ -4,7 +4,14 @@ anchors:
   - &node_job
     working_directory: ~/expo
     docker:
+      # https://github.com/CircleCI-Public/circleci-dockerfiles/tree/master/node/images
       - image: circleci/node:8
+
+  - &default_android
+    working_directory: ~/expo
+    docker:
+      # https://github.com/CircleCI-Public/circleci-dockerfiles/tree/master/android/images
+      - image: circleci/android:api-25-ndk-r17b
 
   - &default_env_vars
     YARN_CACHE_FOLDER: ~/.cache/yarn
@@ -41,6 +48,16 @@ anchors:
       paths:
         - ~/.cache/yarn  # set by YARN_CACHE_FOLDER
 
+  - &restore_gradle_cache
+    restore_cache:
+      key: jars-v0-{{ checksum "android/build.gradle" }}-{{ checksum  "android/app/build.gradle" }}
+
+  - &save_gradle_cache
+    save_cache:
+      key: jars-v0-{{ checksum "android/build.gradle" }}-{{ checksum  "android/app/build.gradle" }}
+      paths:
+      - /.gradle
+
   - &lint
     name: Lint
     command: yarn lint --max-warnings 0
@@ -62,6 +79,7 @@ workflows:
   client:
     jobs:
       - home
+      - client_android
 
 jobs:
   expo_sdk:
@@ -109,3 +127,23 @@ jobs:
       - run:
           <<: *jest
           working_directory: ~/expo/home
+
+  client_android:
+    <<: *default_android
+    environment:
+      <<: *default_env_vars
+    working_directory: ~/expo/android
+    steps:
+      - checkout
+      - *set_up_environment
+      - run:
+          working_directory: ~/project/tools-public
+          command: yarn install
+      - run:
+          working_directory: ~/project/tools-public
+          command: generate-dynamic-macros-android.sh
+      - *restore_gradle_cache
+      - run: ./gradlew :app:preBuild
+      - *save_gradle_cache
+      - run: ./gradlew :app:assembleProdMinSdkProdKernelRelease
+      - run: zipalign -v -p 4 ./app/build/outputs/apk/prodMinSdkProdKernel/release/app-prodMinSdk-prodKernel-release-unsigned.apk app-prod-release-unsigned-aligned.apk
