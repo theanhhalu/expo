@@ -27,7 +27,7 @@ anchors:
         find . -name '.envrc' -exec direnv allow {} \;
 
         # Update Yarn
-        curl -o- -L https://yarnpkg.com/install.sh | bash
+        curl -o- -L https://yarnpkg.com/install.sh | sudo bash
         echo 'export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"' >> "$BASH_ENV"
 
   - &install_workspace_dependencies
