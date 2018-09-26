@@ -11,7 +11,7 @@ anchors:
     working_directory: ~/expo
     docker:
       # https://github.com/CircleCI-Public/circleci-dockerfiles/tree/master/android/images
-      - image: circleci/android:api-25-ndk-r17b
+      - image: circleci/android:api-25-node8-alpha
 
   - &default_env_vars
     YARN_CACHE_FOLDER: ~/.cache/yarn
@@ -37,6 +37,17 @@ anchors:
         # Run `yarn install` from the workspace root to install all of the workspaces' dependencies
         # including each other if there are co-dependencies
         yarn install
+
+  - &install_ndk
+    run:
+      command: |
+        ndk_version=android-ndk-r10e
+        android_ndk_home=/opt/android/${ndk_version}
+        curl --silent --show-error --location --fail --retry 3 --output /tmp/${ndk_version}.zip https://dl.google.com/android/repository/${ndk_version}-linux-x86_64.zip && \
+        sudo unzip -q /tmp/${ndk_version}.zip -d /opt/android && \
+        rm /tmp/${ndk_version}.zip && \
+        sudo chown -R circleci:circleci ${android_ndk_home}
+        echo "export ANDROID_NDK_HOME=${android_ndk_home}" >> "$BASH_ENV"
 
   - &restore_yarn_cache
     restore_cache:
@@ -142,6 +153,7 @@ jobs:
       - run:
           working_directory: ~/project/tools-public
           command: generate-dynamic-macros-android.sh
+      - *install_ndk
       - *restore_gradle_cache
       - run: ./gradlew :app:preBuild
       - *save_gradle_cache
