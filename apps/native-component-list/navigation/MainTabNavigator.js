@@ -63,6 +63,7 @@ import BranchScreen from '../screens/BranchScreen';
 import SMSScreen from '../screens/SMSScreen';
 import ScreensScreen from '../screens/Screens';
 import PermissionsScreen from '../screens/PermissionsScreen';
+import UserNotificationsScreen from '../screens/UserNotifications';
 
 const styles = StyleSheet.create({
   tabBar: {
@@ -146,6 +147,7 @@ const ExpoApisStackNavigator = createStackNavigator(
     KeepAwake: { screen: KeepAwakeScreen },
     MailComposer: { screen: MailComposerScreen },
     ...MediaLibraryScreens,
+    UserNotifications: { screen: UserNotificationsScreen },
     Notification: { screen: NotificationScreen },
     LocalAuthentication: { screen: LocalAuthenticationScreen },
     Location: { screen: LocationScreen },

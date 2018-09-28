@@ -252,14 +252,14 @@ export default {
   },
 
   async scheduleLocalNotificationWithMatchAsync(notification, options) {
-    if (Platform.os === 'android') {
+    if (Platform.OS === 'android') {
        return new Promise((resolve,reject) => reject("This function currently works only on ios"));
     }
     return ExponentNotifications.scheduleLocalNotification(notification, options);
   },
 
   async scheduleLocalNotificationWithTimeIntervalAsync(notification, options) {
-    if (Platform.os === 'android') {
+    if (Platform.OS === 'android') {
        return new Promise((resolve,reject) => reject("This function currently works only on ios"));
     }
     return ExponentNotifications.scheduleLocalNotificationWithTimeInterval(notification, options);
@@ -273,8 +273,8 @@ export default {
       intervalMs?: number;
     } = {}
   ): Promise<LocalNotificationId> {
-    if(Platform.os === 'ios') {
-     return new Promise((resole,reject) => reject("This function is deprecated for ios"));
+    if(Platform.OS === "ios") {
+     throw new Error("This function is deprecated for ios");
     }
     // set now at the beginning of the method, to prevent potential weird warnings when we validate
     // options.time later on
@@ -311,11 +311,11 @@ export default {
       );
 
       // If iOS, pass time as milliseconds
-      if (Platform.OS === 'ios') {
-        options = {
+      if (false /*Platform.OS === "ios"*/) {
+        /*options = {
           ...options,
           time: timeAsDateObj.getTime(),
-        };
+        };*/
       } else {
         options = {
           ...options,
@@ -339,7 +339,7 @@ export default {
     }
 
     if (options.intervalMs != null) {
-      if (Platform.OS === 'ios') {
+      if (false /*Platform.OS === 'ios'*/) {
         throw new Error(`The "intervalMs" option is not supported on iOS`);
       }
 
@@ -350,7 +350,7 @@ export default {
       }
     }
 
-    if (Platform.OS === 'ios') {
+    if (false /*Platform.OS === 'ios'*/) {
       return ExponentNotifications.scheduleLocalNotification(nativeNotification, options);
     } else {
       let _channel;
