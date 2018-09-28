@@ -6,7 +6,7 @@ export default class UserNotificationsScreen extends React.Component {
   static navigationOptions = {
     title: 'Notifications',
   };
-  
+
   state = {
     gotNotification : false,
     expoPushToken: null,
@@ -60,8 +60,8 @@ export default class UserNotificationsScreen extends React.Component {
    );
   };
 
-  _waitTenSec = () => {
-    Notifications.scheduleLocalNotificationWithTimeIntervalAsync(
+  _waitTenSec = async () => {
+    this.notificationID = await Notifications.scheduleLocalNotificationWithTimeIntervalAsync(
       {
         title: "notification",
         body: "notification-body",
@@ -72,6 +72,11 @@ export default class UserNotificationsScreen extends React.Component {
       }
    );
   };
+
+  _cancelWithId = () => {
+    console.log(this.notificationID);
+    Notifications.cancelScheduledNotificationAsync(this.notificationID);
+  }
 
   render() {
     return (
@@ -85,6 +90,7 @@ export default class UserNotificationsScreen extends React.Component {
         <Button onPress={this._onButtonPress} title="trigger"/>
         <Button onPress={this._schedule} title="schedule"/>
         <Button onPress={this._waitTenSec} title="10 sec"/>
+        <Button onPress={this._cancelWithId} title="cancel"/>
         <Text> ExpoPushToken: {this.state.expoPushToken} </Text>
         <Text> categoryId: {this.state.categoryId} </Text>
         <Text> actionId: {this.state.actionId} </Text>

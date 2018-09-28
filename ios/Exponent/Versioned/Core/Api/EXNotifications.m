@@ -202,7 +202,7 @@ RCT_EXPORT_METHOD(scheduleLocalNotificationWithTimeInterval:(NSDictionary *)payl
 RCT_EXPORT_METHOD(cancelScheduledNotification:(NSString *)uniqueId)
 {
   [EXUtil performSynchronouslyOnMainThread:^{
-   [UNNotificationRequest cancelPreviousPerformRequestsWithTarget:uniqueId];
+    [[UNUserNotificationCenter currentNotificationCenter] removePendingNotificationRequestsWithIdentifiers:@[uniqueId]];
   }];
 }
 
@@ -221,7 +221,7 @@ RCT_REMAP_METHOD(cancelAllScheduledNotificationsAsync,
     ^(NSArray<UNNotificationRequest *> * _Nonnull __strong requests){
       for (UNNotificationRequest * request in requests) {
         if ([request.content.userInfo[@"experienceId"] isEqualToString:self.experienceId]) {
-          [UNNotificationRequest cancelPreviousPerformRequestsWithTarget:request.content.userInfo[@"id"]];
+          [UNUserNotificationCenter cancelPreviousPerformRequestsWithTarget:request.content.userInfo[@"id"]];
         }
       }
     }];
@@ -281,7 +281,7 @@ RCT_EXPORT_METHOD(setBadgeNumberAsync:(nonnull NSNumber *)number
    @"experienceId": self.experienceId,
    @"id": uniqueId
   };
-
+  
   return content;
 }
 

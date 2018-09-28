@@ -83,7 +83,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
   [_center requestAuthorizationWithOptions:options
     completionHandler:^(BOOL granted, NSError * _Nullable error) {
       if (!granted) {
-        NSLog(@"Something went wrong");
       }
     }
   ];
