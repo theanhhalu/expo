@@ -221,7 +221,7 @@ RCT_REMAP_METHOD(cancelAllScheduledNotificationsAsync,
     ^(NSArray<UNNotificationRequest *> * _Nonnull __strong requests){
       for (UNNotificationRequest * request in requests) {
         if ([request.content.userInfo[@"experienceId"] isEqualToString:self.experienceId]) {
-          [UNUserNotificationCenter cancelPreviousPerformRequestsWithTarget:request.content.userInfo[@"id"]];
+          [[UNUserNotificationCenter currentNotificationCenter] removePendingNotificationRequestsWithIdentifiers:@[request.content.userInfo[@"id"]]];
         }
       }
     }];

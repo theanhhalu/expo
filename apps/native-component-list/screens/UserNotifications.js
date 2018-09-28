@@ -54,7 +54,7 @@ export default class UserNotificationsScreen extends React.Component {
         data: { scheduledAt: new Date().getTime() },
       },
       {
-        hour: 12,
+        hour: 15,
         minute: 4,
       }
    );
@@ -78,6 +78,11 @@ export default class UserNotificationsScreen extends React.Component {
     Notifications.cancelScheduledNotificationAsync(this.notificationID);
   }
 
+  _cancelAll = () => {
+    console.log(this.notificationID);
+    Notifications.cancelAllScheduledNotificationsAsync(this.notificationID);
+  }
+
   render() {
     return (
       <View style={styles.container}>
@@ -91,6 +96,7 @@ export default class UserNotificationsScreen extends React.Component {
         <Button onPress={this._schedule} title="schedule"/>
         <Button onPress={this._waitTenSec} title="10 sec"/>
         <Button onPress={this._cancelWithId} title="cancel"/>
+        <Button onPress={this._cancelAll} title="cancel all"/>
         <Text> ExpoPushToken: {this.state.expoPushToken} </Text>
         <Text> categoryId: {this.state.categoryId} </Text>
         <Text> actionId: {this.state.actionId} </Text>
