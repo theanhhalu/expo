@@ -38,7 +38,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
       userText = ((UNTextInputNotificationResponse *) response).userText;
     }
     
-    BOOL isRemote = (payload[@"metadata-remote"])? YES : NO;
+    BOOL isRemote = [response.notification.request.trigger isKindOfClass:[UNPushNotificationTrigger class]];
     if (body && experienceId) {
       [[EXKernel sharedInstance] sendNotification:body
                                toExperienceWithId:experienceId
@@ -61,7 +61,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     NSString *experienceId = [payload objectForKey:@"experienceId"];
     NSString * userText = @"";
     
-    BOOL isRemote = (payload[@"metadata-remote"])? YES : NO;
+    BOOL isRemote = [notification.request.trigger isKindOfClass:[UNPushNotificationTrigger class]];
     if (body && experienceId) {
       [[EXKernel sharedInstance] sendNotification:body
                                toExperienceWithId:experienceId
