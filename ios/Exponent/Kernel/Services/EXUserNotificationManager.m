@@ -34,6 +34,14 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     NSDictionary *body = (payload[@"body"])?[payload objectForKey:@"body"]:@{};
     NSString *experienceId = [payload objectForKey:@"experienceId"];
     NSString * userText = @"";
+    NSString * actionId = @"DEFAULT_ACTION";
+    
+    if ([response.actionIdentifier isEqualToString:UNNotificationDismissActionIdentifier]) {
+      actionId = @"DISMISS_ACTION";
+    } else if (![response.actionIdentifier isEqualToString:UNNotificationDefaultActionIdentifier]) {
+      actionId = response.actionIdentifier;
+    }
+    
     if ([response isKindOfClass:[UNTextInputNotificationResponse class]]) {
       userText = ((UNTextInputNotificationResponse *) response).userText;
     }
@@ -44,7 +52,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
                                toExperienceWithId:experienceId
                                    fromBackground:isFromBackground
                                          isRemote:isRemote
-                                         actionId: response.actionIdentifier
+                                         actionId: actionId
                                          userText: userText];
     }
   }
@@ -67,7 +75,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
                                toExperienceWithId:experienceId
                                    fromBackground:NO
                                          isRemote:isRemote
-                                         actionId: @"will_present"
+                                         actionId: @"WILL_PRESENT_ACTION"
                                          userText: userText];
     }
   }

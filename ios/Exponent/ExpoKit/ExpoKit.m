@@ -149,15 +149,9 @@ NSString * const EXAppDidRegisterUserNotificationSettingsNotification = @"kEXApp
   [[NSNotificationCenter defaultCenter] postNotificationName:EXAppDidRegisterForRemoteNotificationsNotification object:nil];
 }
 
-- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)notification
-{
-  //BOOL isFromBackground = !(application.applicationState == UIApplicationStateActive);
-  //[[EXKernel sharedInstance].serviceRegistry.remoteNotificationManager handleRemoteNotification:notification fromBackground:isFromBackground];
-}
-
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
 fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler {
-  BOOL isFromBackground = !(application.applicationState == UIApplicationStateActive);
+  // ToDo add here background task execution
 }
 
 #pragma mark - deep linking hooks

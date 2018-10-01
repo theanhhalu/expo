@@ -24,7 +24,6 @@ function wrapWithExpoRoot<P extends InitialProps>(
       StyleSheet.setStyleAttributePreprocessor('fontFamily', Font.processFontFamily);
 
       if (this.props.exp.notification) {
-        console.log("mam propsy");
         Notifications._setInitialNotification(this.props.exp.notification);
       }
     }

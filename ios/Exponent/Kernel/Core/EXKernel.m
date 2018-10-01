@@ -238,12 +238,6 @@ const NSUInteger kEXErrorCodeAppForbidden = 424242;
 - (NSDictionary *)initialAppPropsFromLaunchOptions:(NSDictionary *)launchOptions
 {
   NSMutableDictionary *initialProps = [NSMutableDictionary dictionary];
-  
-  NSDictionary *remoteNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
-  if (remoteNotification) {
-    initialProps[@"notification"] = [self _notificationPropsWithBody:remoteNotification[@"body"] isFromBackground:YES isRemote:YES actionId:nil userText:nil];
-  }
-  
   return initialProps;
 }
 

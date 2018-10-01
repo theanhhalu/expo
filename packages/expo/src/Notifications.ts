@@ -310,18 +310,10 @@ export default {
         `Provided value for "time" is before the current date. Did you possibly pass number of seconds since Unix Epoch instead of number of milliseconds?`
       );
 
-      // If iOS, pass time as milliseconds
-      if (false /*Platform.OS === "ios"*/) {
-        /*options = {
-          ...options,
-          time: timeAsDateObj.getTime(),
-        };*/
-      } else {
-        options = {
-          ...options,
-          time: timeAsDateObj,
-        };
-      }
+      options = {
+        ...options,
+        time: timeAsDateObj,
+      };
     }
 
     if (options.intervalMs != null && options.repeat != null) {
@@ -338,11 +330,7 @@ export default {
       }
     }
 
-    if (options.intervalMs != null) {
-      if (false /*Platform.OS === 'ios'*/) {
-        throw new Error(`The "intervalMs" option is not supported on iOS`);
-      }
-
+    if (options.intervalMs != null) {f
       if (options.intervalMs <= 0 || !Number.isInteger(options.intervalMs)) {
         throw new Error(
           `Pass an integer greater than zero as the value for the "intervalMs" option`
@@ -350,32 +338,28 @@ export default {
       }
     }
 
-    if (false /*Platform.OS === 'ios'*/) {
-      return ExponentNotifications.scheduleLocalNotification(nativeNotification, options);
-    } else {
-      let _channel;
-      if (nativeNotification.channelId) {
-        _channel = await _legacyReadChannel(nativeNotification.channelId);
-      }
+    let _channel;
+    if (nativeNotification.channelId) {
+      _channel = await _legacyReadChannel(nativeNotification.channelId);
+    }
 
-      if (IS_USING_NEW_BINARY) {
-        // delete the legacy channel from AsyncStorage so this codepath isn't triggered anymore
-        _legacyDeleteChannel(nativeNotification.channelId);
-        return ExponentNotifications.scheduleLocalNotificationWithChannel(
-          nativeNotification,
-          options,
-          _channel
-        );
-      } else {
-        // TODO: remove this codepath before releasing, it will never be triggered on SDK 28+
-        // channel does not actually exist, so add its settings to the individual notification
-        if (_channel) {
-          nativeNotification.sound = _channel.sound;
-          nativeNotification.priority = _channel.priority;
-          nativeNotification.vibrate = _channel.vibrate;
-        }
-        return ExponentNotifications.scheduleLocalNotification(nativeNotification, options);
+    if (IS_USING_NEW_BINARY) {
+      // delete the legacy channel from AsyncStorage so this codepath isn't triggered anymore
+      _legacyDeleteChannel(nativeNotification.channelId);
+      return ExponentNotifications.scheduleLocalNotificationWithChannel(
+        nativeNotification,
+        options,
+        _channel
+      );
+    } else {
+      // TODO: remove this codepath before releasing, it will never be triggered on SDK 28+
+      // channel does not actually exist, so add its settings to the individual notification
+      if (_channel) {
+        nativeNotification.sound = _channel.sound;
+        nativeNotification.priority = _channel.priority;
+        nativeNotification.vibrate = _channel.vibrate;
       }
+      return ExponentNotifications.scheduleLocalNotification(nativeNotification, options);
     }
   },
 

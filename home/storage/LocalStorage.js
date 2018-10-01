@@ -99,7 +99,6 @@ async function clearAllAsync() {
 // needed for routing push notifications in Home.
 addListenerWithNativeCallback('ExponentKernel.getHistoryUrlForExperienceId', async event => {
   const { experienceId } = event;
-  console.log("mam Exp id " + experienceId);
   let history = await getHistoryAsync();
   history = history.sort((item1, item2) => {
     // date descending -- we want to pick the most recent experience with this id,
