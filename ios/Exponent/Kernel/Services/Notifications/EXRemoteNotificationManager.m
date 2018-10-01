@@ -216,7 +216,7 @@ typedef void(^EXRemoteNotificationAPNSTokenHandler)(NSData * _Nullable apnsToken
   return settings.types != UIUserNotificationTypeNone;
 =======
   [[UNUserNotificationCenter currentNotificationCenter] getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
-    if (settings.alertSetting == UNNotificationSettingEnabled) {
+    if (settings.authorizationStatus == UNAuthorizationStatusAuthorized) {
       handler(YES);
       return;
     }
