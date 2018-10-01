@@ -330,7 +330,7 @@ export default {
       }
     }
 
-    if (options.intervalMs != null) {f
+    if (options.intervalMs != null) {
       if (options.intervalMs <= 0 || !Number.isInteger(options.intervalMs)) {
         throw new Error(
           `Pass an integer greater than zero as the value for the "intervalMs" option`
